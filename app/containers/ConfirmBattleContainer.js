@@ -1,5 +1,6 @@
 var React = require('react');
 var ConfirmBattle = require('../components/ConfirmBattle');
+var githubHelpers = require('../utils/githubHelpers');
 
 var ConfirmBattleContainer = React.createClass({
   contextTypes: {
@@ -7,36 +8,40 @@ var ConfirmBattleContainer = React.createClass({
   },
 
   getInitialState: function () {
-    console.log('getInitialState');
     return {
       isLoading: true,
-      playerInfo: []
+      playersInfo: []
     }
   },
 
   componentDidMount: function () {
     var query = this.props.location.query;
     // Fetch info from Github then update state
-    console.log('componentDidMount');
+    // https://egghead.io/playlists/the-this-key-word-250c37d9
+    githubHelpers.getPlayersInfo([query.playerOne, query.playerTwo])
+      .then(function (players) {
+        this.setState({
+          isLoading: false,
+          playersInfo: [players[0], players[1]]
+        })
+      }.bind(this))
   },
 
-  componentWillMount: function () {
-    console.log('componentWillMount');
-  },
-
-  componentWillUnmount: function () {
-    console.log('componentWillUnmount');
-  },
-
-  componentWillReceiveProps: function () {
-    console.log('componentWillReceiveProps');
+  handleInitateBattle: function () {
+    this.context.router.push({
+      pathname: '/results',
+      state: {
+        playersInfo: this.state.playersInfo
+      }
+    })
   },
 
   render: function () {
     return (
       <ConfirmBattle
         isLoading={this.state.isLoading}
-        playerInfo={this.state.playerInfo} />
+        onInitateBattle={this.handleInitateBattle}
+        playersInfo={this.state.playersInfo} />
     );
   }
 });
